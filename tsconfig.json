@@ -1,0 +1,29 @@
+{
+	"compilerOptions": {
+		"baseUrl": ".",
+		"declaration": true,
+		"emitDeclarationOnly": true,
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"target": "ES6",
+		"moduleResolution": "Node",
+		"sourceMap": true,
+		"strictNullChecks": true,
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"paths": {
+			"config/*": [
+				"config/*"
+			],
+			"controllers": [
+				"controllers/*"
+			],
+			"libraries/*": [
+				"libraries/*"
+			],
+			"models/*": [
+				"models/*"
+			]
+		}
+	}
+}
