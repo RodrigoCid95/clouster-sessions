@@ -1,43 +1,25 @@
-import { Socket } from 'node:net'
 import crypto from 'node:crypto'
-import path from 'node:path'
 import { Store } from 'express-session'
-
-const sessionSockPath = path.resolve(process.cwd(), 'session-server.sock')
 
 class SessionConnector {
   #CALLBACKS: {
     [x: string]: any
   }
-  #client: Socket
-  #connected: boolean
   constructor() {
     this.#CALLBACKS = {}
-    this.#client = new Socket()
-    this.#client.on('data', data => {
-      const strData = data.toString()
-      const parts = strData
-        .split('\n')
-        .filter(part => part !== '')
-        .map(part => JSON.parse(part))
-      for (const part of parts) {
-        const { uid, data } = part
-        this.#CALLBACKS[uid](data)
-        delete this.#CALLBACKS[uid]
-      }
+    process.on('message', message => {
+      const { uid, data } = message as any
+      this.#CALLBACKS[uid](data)
+      delete this.#CALLBACKS[uid]
     })
-    this.#connected = false
   }
   async emit(event: string, ...args: any[]) {
     const uid = crypto.randomUUID()
-    if (!this.#connected) {
-      await new Promise<void>(resolve => this.#client.connect(sessionSockPath, resolve))
-      this.#connected = true
-    }
     return new Promise(resolve => {
       this.#CALLBACKS[uid] = (data: any) => resolve(data)
-      const data = JSON.stringify({ uid, event, args })
-      this.#client.write(`${data}\n`)
+      if (process.send) {
+        process.send({ uid, event, args })
+      }
     })
   }
 }
