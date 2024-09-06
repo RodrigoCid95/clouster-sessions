@@ -26,18 +26,18 @@ export const initSessionServer = (SOCKET_PATH: string) => new Promise<void>(reso
   const sessionServer = createServer(socket => {
     socket.on('data', (data) => {
       const strData = data.toString()
-      const { event, args = [] } = JSON.parse(strData)
-      const e = Store[event]
-      if (e) {
+      const parts = strData
+        .split('\n')
+        .filter(part => part !== '')
+        .map(part => JSON.parse(part))
+      for (const part of parts) {
+        const { uid, event, args = [] } = part
+        const e = Store[event]
         const result = e(...args)
-        socket.write(JSON.stringify(result))
+        const message = JSON.stringify({ uid, data: result })
+        socket.write(`${message}\n`)
       }
     })
   })
-  const listen = sessionServer.listen(SOCKET_PATH, resolve)
-  process.on('SIGTERM', () => {
-    listen.close(() => {
-      fs.rmSync(SOCKET_PATH, { force: true })
-    })
-  })
+  sessionServer.listen(SOCKET_PATH, resolve)
 })

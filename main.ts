@@ -1,8 +1,10 @@
 import cluster from "node:cluster"
+import path from 'node:path'
 import { initSessionServer } from 'SessionServer'
 
 if (cluster.isPrimary) {
-  initSessionServer('./session-server.sock')
+  const sessionSockPath = path.resolve(process.cwd(), 'session-server.sock')
+  initSessionServer(sessionSockPath)
     .then(() => {
       const os = require('node:os')
       const numCPUs = os.availableParallelism()
