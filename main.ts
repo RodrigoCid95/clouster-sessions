@@ -1,8 +1,8 @@
 import cluster from "node:cluster"
 
 if (cluster.isPrimary) {
-  const os = require('node:os')
-  const numCPUs = os.availableParallelism()
+  let numCPUs = Number(flags.get('i'))
+  numCPUs = isNaN(numCPUs) ? 1 : numCPUs
   console.log(`\n\nMaster ${process.pid} is running`, `\n${numCPUs} workers:\n`)
   const Store = {
     store: new Map(),
